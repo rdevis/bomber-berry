@@ -13,10 +13,11 @@ import os, sys, random, math
 # Constantes
 # -----------
 
-blocks = pygame.sprite.Group() 
 SCREEN_WIDTH = 320
 SCREEN_HEIGHT = 240
 BLOCK_SIZE = 16
+FPS = 30
+BOMB_TIME = 2
  
 # ------------------------------
 # Clases y Funciones utilizadas
@@ -46,9 +47,90 @@ def load_image(nombre, dir_imagen, alpha=False):
 # -----------------------------------------------
 # Creamos los sprites (clases) de los objetos del juego:
  
-class Juego():
+class Game():
     def __init__(self):
-        self.puntos = 0
+        self.score = 0
+        self.player = Bomberman(32,48)
+        self.blocks = pygame.sprite.Group()
+        self.bricks = pygame.sprite.Group()
+        self.bombs = pygame.sprite.Group()
+        self.fires = pygame.sprite.Group()
+        self.createMap()
+
+    def createMap(self):
+        for x in range(0,19):
+            for y in range(0,13):
+                # Bloques bordeantes
+                if x == 0 or y == 0 or x == 18 or y == 12:
+                    self.blocks.add(Block(BLOCK_SIZE+x*BLOCK_SIZE,32+BLOCK_SIZE*y))
+                # Bloques internos
+                elif y % 2 == 0 and x % 2 == 0:
+                    self.blocks.add(Block(BLOCK_SIZE+x*BLOCK_SIZE,32+BLOCK_SIZE*y))
+                # Ladrillos al azar
+                elif random.randint(1,10) == 5 and (x > 3 or y > 3):
+                    self.bricks.add(Brick(BLOCK_SIZE+x*BLOCK_SIZE,32+BLOCK_SIZE*y))
+
+    def drawGame(self, screen):
+        for bomb in self.bombs:
+            bomb.timer -= 1
+            if bomb.timer <= 0:
+                self.fires.add(Fire(bomb.rect.centerx, bomb.rect.centery))
+                bomb.kill()
+        for fire in self.fires:
+            fire.timer -= 1
+            if fire.timer <= 0:
+                fire.kill()
+
+        collisions=pygame.sprite.groupcollide(self.fires,self.bricks,False,True)
+
+        screen.fill((16,120,48))
+        self.blocks.draw(screen); self.bricks.draw(screen); self.bombs.draw(screen)
+        self.fires.draw(screen)
+        screen.blit(self.player.image, self.player.rect)
+        screen.blit(self.player.head, self.player.rhead)
+        pygame.display.flip()
+
+    def putBomb(self):
+        if len(self.bombs) < self.player.max_bombs:
+            x = 0; y = 0
+            if self.player.rect.centerx % BLOCK_SIZE < BLOCK_SIZE/2:
+                x = self.player.rect.centerx - self.player.rect.centerx % BLOCK_SIZE
+            else:
+                x = self.player.rect.centerx + (BLOCK_SIZE - self.player.rect.centerx % BLOCK_SIZE)
+            if self.player.rect.centery % BLOCK_SIZE < BLOCK_SIZE/2:
+                y = self.player.rect.centery - self.player.rect.centery % BLOCK_SIZE
+            else:
+                y = self.player.rect.centery + (BLOCK_SIZE - self.player.rect.centery % BLOCK_SIZE)
+            self.bombs.add(Bomb(x,y))
+
+    def movePlayer(self, dx, dy):
+        self.player.rect.centerx += dx
+        self.player.rect.centery += dy
+
+        for block in self.blocks:
+            if self.player.rect.colliderect(block.rect):
+                if dx > 0: # Moving right; Hit the left side of the block
+                    self.player.rect.right = block.rect.left
+                if dx < 0: # Moving left; Hit the right side of the block
+                    self.player.rect.left = block.rect.right
+                if dy > 0: # Moving down; Hit the top side of the block
+                    self.player.rect.bottom = block.rect.top
+                if dy < 0: # Moving up; Hit the bottom side of the block
+                    self.player.rect.top = block.rect.bottom
+
+        for brick in self.bricks:
+            if self.player.rect.colliderect(brick.rect):
+                if dx > 0: # Moving right; Hit the left side of the brick
+                    self.player.rect.right = brick.rect.left
+                if dx < 0: # Moving left; Hit the right side of the brick
+                    self.player.rect.left = brick.rect.right
+                if dy > 0: # Moving down; Hit the top side of the brick
+                    self.player.rect.bottom = brick.rect.top
+                if dy < 0: # Moving up; Hit the bottom side of the brick
+                    self.player.rect.top = brick.rect.bottom
+
+        self.player.rhead.centerx = self.player.rect.centerx
+        self.player.rhead.y = self.player.rect.top-13
  
 class Block(pygame.sprite.Sprite):
  
@@ -70,12 +152,13 @@ class Brick(pygame.sprite.Sprite):
 
 class Bomberman(pygame.sprite.Sprite):
 
-    def __init__(self):
+    def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
+        self.max_bombs = 1
         self.image = load_image("body.png", "sprites/", alpha=True)
         self.rect = self.image.get_rect()
-        self.rect.centerx = 32
-        self.rect.centery = 48
+        self.rect.centerx = x
+        self.rect.centery = y
 
         # Head part
         self.head = load_image("head.png", "sprites/", alpha=True)
@@ -83,23 +166,24 @@ class Bomberman(pygame.sprite.Sprite):
         self.rhead.centerx = self.rect.centerx
         self.rhead.y = self.rect.top-13
 
-    def moveMe(self, dx, dy):
-        self.rect.centerx += dx
-        self.rect.centery += dy
+class Bomb(pygame.sprite.Sprite):
 
-        for block in blocks:
-            if self.rect.colliderect(block.rect):
-                if dx > 0: # Moving right; Hit the left side of the block
-                    self.rect.right = block.rect.left
-                if dx < 0: # Moving left; Hit the right side of the block
-                    self.rect.left = block.rect.right
-                if dy > 0: # Moving down; Hit the top side of the block
-                    self.rect.bottom = block.rect.top
-                if dy < 0: # Moving up; Hit the bottom side of the block
-                    self.rect.top = block.rect.bottom
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = load_image("bomb.png", "sprites/", alpha=True)
+        self.timer = FPS*BOMB_TIME
+        self.rect = self.image.get_rect()
+        self.rect.centerx = x
+        self.rect.centery = y
 
-        self.rhead.centerx = self.rect.centerx
-        self.rhead.y = self.rect.top-13
+class Fire(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = load_image("fire.png", "sprites/", alpha=True)
+        self.timer = FPS*1
+        self.rect = self.image.get_rect()
+        self.rect.centerx = x
+        self.rect.centery = y
 
 # ------------------------------
 # Funcion principal del juego
@@ -113,28 +197,14 @@ def main():
     pygame.display.set_caption("BomberPi")
  
     # cargamos los objetos
-    juego = Juego()
-    #blocks = pygame.sprite.Group()
-    bricks = pygame.sprite.Group()
-    bomberman = Bomberman()
-    for x in range(0,19):
-        for y in range(0,13):
-            # Bloques bordeantes
-            if x == 0 or y == 0 or x == 18 or y == 12:
-                blocks.add(Block(BLOCK_SIZE+x*BLOCK_SIZE,32+BLOCK_SIZE*y))
-            # Bloques internos
-            elif y % 2 == 0 and x % 2 == 0:
-                blocks.add(Block(BLOCK_SIZE+x*BLOCK_SIZE,32+BLOCK_SIZE*y))
-            # Ladrillos al azar
-            elif random.randint(1,10) == 5 and (x > 3 or y > 3):
-                bricks.add(Brick(BLOCK_SIZE+x*BLOCK_SIZE,32+BLOCK_SIZE*y))
+    game = Game()
  
     clock = pygame.time.Clock()
     pygame.key.set_repeat(1, 15)
  
     # el bucle principal del juego
     while True:
-        clock.tick(30)
+        clock.tick(FPS)
         
         # Posibles entradas del teclado
         keys = pygame.key.get_pressed()
@@ -142,25 +212,23 @@ def main():
             sys.exit(0)
 
         if keys[K_DOWN]:
-            bomberman.moveMe(0,4)
+            game.movePlayer(0,4)
         if keys[K_UP]:
-            bomberman.moveMe(0,-4)
+            game.movePlayer(0,-4)
         if keys[K_RIGHT]:
-            bomberman.moveMe(4,0)
+            game.movePlayer(4,0)
         if keys[K_LEFT]:
-            bomberman.moveMe(-4,0)
+            game.movePlayer(-4,0)
+        if keys[K_LCTRL] or keys[K_RCTRL]:
+            game.putBomb()
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit(0)
 
         # actualizamos la pantalla
-        #screen.blit(fondo, (0, 0))
-        screen.fill((16,120,48))
-        blocks.draw(screen); bricks.draw(screen)
-        screen.blit(bomberman.image, bomberman.rect)
-        screen.blit(bomberman.head, bomberman.rhead)
-        pygame.display.flip()
+        game.drawGame(screen)
  
 if __name__ == "__main__":
     main()
