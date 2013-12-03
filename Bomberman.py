@@ -7,7 +7,8 @@
  
 import pygame
 from pygame.locals import *
-import os, sys, random, math
+import os, sys, random, math, time
+#import serial
  
 # -----------
 # Constantes
@@ -18,6 +19,10 @@ SCREEN_HEIGHT = 240
 BLOCK_SIZE = 16
 FPS = 30
 BOMB_TIME = 3
+
+PlayController = {"PS1_CUADRADO":False, "PS1_TRIANGULO":False, "PS1_CIRULO":False, "PS1_EQUIS":False, "PS1_ARRIBA":False, "PS1_ABAJO":False, "PS1_IZQUIERDA":False, "PS1_DERECHA":False, "PS1_L1":False, "PS1_R1":False, "PS1_L2":False, "PS1_R2":False, "PS1_L3":False, "PS1_R3":False, "PS1_START":False, "PS1_SELECT":False, "PS1_JLARRIBA":False, "PS1_JLABAJO":False, "PS1_JLIZQUIERDA":False, "PS1_JLDERECHA":False, "PS1_JRARRIBA":False, "PS1_JRABAJO":False, "PS1_JRIZQUIERDA":False, "PS1_JRDERECHA":False}
+
+#port = serial.Serial("/dev/ttyAMA0", baudrate=57600, timeout=3.0)
  
 # ------------------------------
 # Clases y Funciones utilizadas
@@ -43,6 +48,68 @@ def load_image(nombre, dir_imagen, alpha=False):
         image = image.convert()
     return image
  
+def readlineCR(port):
+    rv = ""
+    while True:
+        ch = port.read()
+        rv += ch
+        if ch=='\r' or ch=='':
+            return rv
+    
+def keysPS():
+    salida = {"PS1_CUADRADO":False, "PS1_TRIANGULO":False, "PS1_CIRULO":False, "PS1_EQUIS":False, "PS1_ARRIBA":False, "PS1_ABAJO":False, "PS1_IZQUIERDA":False, "PS1_DERECHA":False, "PS1_L1":False, "PS1_R1":False, "PS1_L2":False, "PS1_R2":False, "PS1_L3":False, "PS1_R3":False, "PS1_START":False, "PS1_SELECT":False, "PS1_JLARRIBA":False, "PS1_JLABAJO":False, "PS1_JLIZQUIERDA":False, "PS1_JLDERECHA":False, "PS1_JRARRIBA":False, "PS1_JRABAJO":False, "PS1_JRIZQUIERDA":False, "PS1_JRDERECHA":False}
+    while port.inWaiting() > 0:
+        rcv = readlineCR(port)
+    if rcv == ";1CU:\r":
+        salida["PS1_CUADRADO"]=True
+    elif rcv == ";1TR:\r":
+        salida["PS1_TRIANGULO"]=True
+    elif rcv == ";1CI:\r":
+        salida["PS1_CIRCULO"]=True
+    elif rcv == ";1EQ:\r":
+        salida["PS1_EQUIS"]=True
+    elif rcv == ";1AR:\r":
+        salida["PS1_ARRIBA"]=True
+    elif rcv == ";1AB:\r":
+        salida["PS1_ABAJO"]=True
+    elif rcv == ";1IZ:\r":
+        salida["PS1_IZQUIERDA"]=True
+    elif rcv == ";1DE:\r":
+        salida["PS1_DERECHA"]=True
+    elif rcv == ";1L1:\r":
+        salida["PS1_L1"]=True
+    elif rcv == ";1R1:\r":
+        salida["PS1_R1"]=True
+    elif rcv == ";1L2:\r":
+        salida["PS1_L2"]=True
+    elif rcv == ";1R2:\r":
+        salida["PS1_R2"]=True
+    elif rcv == ";1L3:\r":
+        salida["PS1_L3"]=True
+    elif rcv == ";1R3:\r":
+        salida["PS1_R3"]=True
+    elif rcv == ";1ST:\r":
+        salida["PS1_START"]=True
+    elif rcv == ";1SE:\r":
+        salida["PS1_SELECT"]=True
+    elif rcv == ";1LU:\r":
+        salida["PS1_JLARRIBA"]=True
+    elif rcv == ";1LD:\r":
+        salida["PS1_JLABAJO"]=True
+    elif rcv == ";1LL:\r":
+        salida["PS1_JLIZQUIERDA"]=True
+    elif rcv == ";1LR:\r":
+        salida["PS1_JLDERECHA"]=True
+    elif rcv == ";1RU:\r":
+        salida["PS1_JRARRIBA"]=True
+    elif rcv == ";1RD:\r":
+        salida["PS1_JRABAJO"]=True
+    elif rcv == ";1RL:\r":
+        salida["PS1_JRIZQUIERDA"]=True
+    elif rcv == ";1RD:\r":
+        salida["PS1_JRDERECHA"]=True
+    port.write(";1RE:")
+    return salida
  
 # -----------------------------------------------
 # Creamos los sprites (clases) de los objetos del juego:
@@ -52,6 +119,7 @@ class Game():
         self.score = 0
         self.player = Bomberman(32,48, False)
         self.player2 = Bomberman(288,208, True)
+        self.players = [self.player, self.player2]
 
         self.blocks = pygame.sprite.Group()
         self.bricks = pygame.sprite.Group()
@@ -76,7 +144,7 @@ class Game():
                     self.blocks.add(b)
                     self.matrix[x][y] = b
                 # Ladrillos al azar
-                elif random.randint(1,10) == 5 and (x > 3 or y > 3):
+                elif random.randint(1,10) == 5 and (x > 2 or y > 2) and (x < 16 or y < 10):
                     b = Brick(BLOCK_SIZE+x*BLOCK_SIZE,32+BLOCK_SIZE*y)
                     self.bricks.add(b)
                     self.matrix[x][y] = b
@@ -102,31 +170,46 @@ class Game():
         for fire in self.fires:
             if self.matrix[fire.x+1][fire.y].__class__.__name__ == "Brick":
                 self.matrix[fire.x+1][fire.y].kill()
+                self.matrix[fire.x+1][fire.y] = 0
             elif self.matrix[fire.x+1][fire.y].__class__.__name__ != "Block":
                 if self.matrix[fire.x+2][fire.y].__class__.__name__ == "Brick":
                     self.matrix[fire.x+2][fire.y].kill()
+                    self.matrix[fire.x+2][fire.y] = 0
 
             if self.matrix[fire.x-1][fire.y].__class__.__name__ == "Brick":
                 self.matrix[fire.x-1][fire.y].kill()
+                self.matrix[fire.x-1][fire.y] = 0
             elif self.matrix[fire.x-1][fire.y].__class__.__name__ != "Block":
                 if self.matrix[fire.x-2][fire.y].__class__.__name__ == "Brick":
                     self.matrix[fire.x-2][fire.y].kill()
+                    self.matrix[fire.x-2][fire.y] = 0
 
             if self.matrix[fire.x][fire.y+1].__class__.__name__ == "Brick":
                 self.matrix[fire.x][fire.y+1].kill()
+                self.matrix[fire.x][fire.y+1] = 0
             elif self.matrix[fire.x][fire.y+1].__class__.__name__ != "Block":
                 if self.matrix[fire.x][fire.y+2].__class__.__name__ == "Brick":
                     self.matrix[fire.x][fire.y+2].kill()
+                    self.matrix[fire.x][fire.y+2] = 0
 
             if self.matrix[fire.x][fire.y-1].__class__.__name__ == "Brick":
                 self.matrix[fire.x][fire.y-1].kill()
+                self.matrix[fire.x][fire.y-1] = 0
             elif self.matrix[fire.x][fire.y-1].__class__.__name__ != "Block":
                 if self.matrix[fire.x][fire.y-2].__class__.__name__ == "Brick":
                     self.matrix[fire.x][fire.y-2].kill()
+                    self.matrix[fire.x][fire.y-2] = 0
 
             #Colisiones con jugadores
-            if fire.x+1 == self.player.x or fire.x-1 == self.player.x or fire.y+1 == self.player.y or fire.y-1 == self.player.y:
-                sys.exit(0)
+            for player in self.players:
+                if fire.x+1 == player.x and fire.y == player.y:
+                    sys.exit(0)
+                if fire.x-1 == player.x and fire.y == player.y:
+                    sys.exit(0)
+                if fire.y+1 == player.y and fire.x == player.x:
+                    sys.exit(0)
+                if fire.y-1 == player.y and fire.x == player.x:
+                    sys.exit(0)
                             
 
         screen.fill((16,120,48))
@@ -305,6 +388,7 @@ def main():
         clock.tick(FPS)
         
         # Posibles entradas del teclado
+        # PlayController = keysPS()
         keys = pygame.key.get_pressed()
         if keys[K_ESCAPE]:
             sys.exit(0)
@@ -319,6 +403,17 @@ def main():
         if keys[K_LEFT]:
             game.movePlayer(game.player,-4,0)
         if keys[K_RCTRL]:
+            game.putBomb(game.player)
+
+        if PlayController["PS1_ABAJO"] or PlayController["PS1_JLABAJO"]:
+            game.movePlayer(game.player,0,4)
+        if PlayController["PS1_ARRIBA"] or PlayController["PS1_JLARRIBA"]:
+            game.movePlayer(game.player,0,-4)
+        if PlayController["PS1_DERECHA"] or PlayController["PS1_JLDERECHA"]:
+            game.movePlayer(game.player,4,0)
+        if PlayController["PS1_IZQUIERDA"] or PlayController["PS1_JLIZQUIERDA"]:
+            game.movePlayer(game.player,-4,0)
+        if PlayController["PS1_EQUIS"]:
             game.putBomb(game.player)
 
         # Control del jugador 2
