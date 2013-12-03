@@ -20,7 +20,7 @@ BLOCK_SIZE = 16
 FPS = 30
 BOMB_TIME = 3
 
-PlayController = {"PS1_CUADRADO":False, "PS1_TRIANGULO":False, "PS1_CIRULO":False, "PS1_EQUIS":False, "PS1_ARRIBA":False, "PS1_ABAJO":False, "PS1_IZQUIERDA":False, "PS1_DERECHA":False, "PS1_L1":False, "PS1_R1":False, "PS1_L2":False, "PS1_R2":False, "PS1_L3":False, "PS1_R3":False, "PS1_START":False, "PS1_SELECT":False, "PS1_JLARRIBA":False, "PS1_JLABAJO":False, "PS1_JLIZQUIERDA":False, "PS1_JLDERECHA":False, "PS1_JRARRIBA":False, "PS1_JRABAJO":False, "PS1_JRIZQUIERDA":False, "PS1_JRDERECHA":False}
+PlayController = {"PS1_CUADRADO":False, "PS1_TRIANGULO":False, "PS1_CIRCULO":False, "PS1_EQUIS":False, "PS1_ARRIBA":False, "PS1_ABAJO":False, "PS1_IZQUIERDA":False, "PS1_DERECHA":False, "PS1_L1":False, "PS1_R1":False, "PS1_L2":False, "PS1_R2":False, "PS1_L3":False, "PS1_R3":False, "PS1_START":False, "PS1_SELECT":False, "PS1_JLARRIBA":False, "PS1_JLABAJO":False, "PS1_JLIZQUIERDA":False, "PS1_JLDERECHA":False, "PS1_JRARRIBA":False, "PS1_JRABAJO":False, "PS1_JRIZQUIERDA":False, "PS1_JRDERECHA":False}
 
 #port = serial.Serial("/dev/ttyAMA0", baudrate=57600, timeout=3.0)
  
@@ -57,7 +57,7 @@ def readlineCR(port):
             return rv
     
 def keysPS():
-    salida = {"PS1_CUADRADO":False, "PS1_TRIANGULO":False, "PS1_CIRULO":False, "PS1_EQUIS":False, "PS1_ARRIBA":False, "PS1_ABAJO":False, "PS1_IZQUIERDA":False, "PS1_DERECHA":False, "PS1_L1":False, "PS1_R1":False, "PS1_L2":False, "PS1_R2":False, "PS1_L3":False, "PS1_R3":False, "PS1_START":False, "PS1_SELECT":False, "PS1_JLARRIBA":False, "PS1_JLABAJO":False, "PS1_JLIZQUIERDA":False, "PS1_JLDERECHA":False, "PS1_JRARRIBA":False, "PS1_JRABAJO":False, "PS1_JRIZQUIERDA":False, "PS1_JRDERECHA":False}
+    salida = {"PS1_CUADRADO":False, "PS1_TRIANGULO":False, "PS1_CIRCULO":False, "PS1_EQUIS":False, "PS1_ARRIBA":False, "PS1_ABAJO":False, "PS1_IZQUIERDA":False, "PS1_DERECHA":False, "PS1_L1":False, "PS1_R1":False, "PS1_L2":False, "PS1_R2":False, "PS1_L3":False, "PS1_R3":False, "PS1_START":False, "PS1_SELECT":False, "PS1_JLARRIBA":False, "PS1_JLABAJO":False, "PS1_JLIZQUIERDA":False, "PS1_JLDERECHA":False, "PS1_JRARRIBA":False, "PS1_JRABAJO":False, "PS1_JRIZQUIERDA":False, "PS1_JRDERECHA":False}
     while port.inWaiting() > 0:
         rcv = readlineCR(port)
     if rcv == ";1CU:\r":
@@ -106,7 +106,7 @@ def keysPS():
         salida["PS1_JRABAJO"]=True
     elif rcv == ";1RL:\r":
         salida["PS1_JRIZQUIERDA"]=True
-    elif rcv == ";1RD:\r":
+    elif rcv == ";1RR:\r":
         salida["PS1_JRDERECHA"]=True
     port.write(";1RE:")
     return salida
@@ -240,6 +240,7 @@ class Game():
                 self.bombs.add(Bomb(x,y))
             else:
                 self.bombs2.add(Bomb(x,y))
+            player.insideBomb = True
 
     def movePlayer(self, player, dx, dy):
         player.rect.centerx += dx
@@ -266,6 +267,28 @@ class Game():
                     player.rect.bottom = brick.rect.top
                 if dy < 0: # Moving up; Hit the bottom side of the brick
                     player.rect.top = brick.rect.bottom
+
+        if player.insideBomb == False:
+            for bomb in self.bombs:
+                if player.rect.colliderect(bomb.rect):
+                    if dx > 0: # Moving right; Hit the left side of the bomb
+                        player.rect.right = bomb.rect.left
+                    if dx < 0: # Moving left; Hit the right side of the bomb
+                        player.rect.left = bomb.rect.right
+                    if dy > 0: # Moving down; Hit the top side of the bomb
+                        player.rect.bottom = bomb.rect.top
+                    if dy < 0: # Moving up; Hit the bottom side of the bomb
+                        player.rect.top = bomb.rect.bottom
+            for bomb in self.bombs2:
+                if player.rect.colliderect(bomb.rect):
+                    if dx > 0: # Moving right; Hit the left side of the bomb
+                        player.rect.right = bomb.rect.left
+                    if dx < 0: # Moving left; Hit the right side of the bomb
+                        player.rect.left = bomb.rect.right
+                    if dy > 0: # Moving down; Hit the top side of the bomb
+                        player.rect.bottom = bomb.rect.top
+                    if dy < 0: # Moving up; Hit the bottom side of the bomb
+                        player.rect.top = bomb.rect.bottom
 
         player.rhead.centerx = player.rect.centerx
         player.rhead.y = player.rect.top-13
@@ -318,6 +341,7 @@ class Bomberman(Tile):
             self.x = 17
             self.y = 11
         self.isPlayer2 = isPlayer2
+        self.insideBomb = False
 
         # Head part
         if isPlayer2 == False:
@@ -329,6 +353,7 @@ class Bomberman(Tile):
         self.rhead.y = self.rect.top-13
 
     def updatePosition(self):
+        anteriorX = self.x; anteriorY = self.y
         if self.rect.centerx % BLOCK_SIZE < BLOCK_SIZE/2:
             pos = self.rect.centerx - self.rect.centerx % BLOCK_SIZE
             self.x = (pos - 16) / 16
@@ -341,6 +366,8 @@ class Bomberman(Tile):
         else:
             pos = self.rect.centery + (BLOCK_SIZE - self.rect.centery % BLOCK_SIZE)
             self.y = (pos - 32) / 16
+        if anteriorX != self.x or anteriorY != self.y:
+            self.insideBomb = False
 
 class Bomb(pygame.sprite.Sprite):
     def __init__(self, x, y):
