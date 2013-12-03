@@ -60,54 +60,54 @@ def keysPS():
     salida = {"PS1_CUADRADO":False, "PS1_TRIANGULO":False, "PS1_CIRCULO":False, "PS1_EQUIS":False, "PS1_ARRIBA":False, "PS1_ABAJO":False, "PS1_IZQUIERDA":False, "PS1_DERECHA":False, "PS1_L1":False, "PS1_R1":False, "PS1_L2":False, "PS1_R2":False, "PS1_L3":False, "PS1_R3":False, "PS1_START":False, "PS1_SELECT":False, "PS1_JLARRIBA":False, "PS1_JLABAJO":False, "PS1_JLIZQUIERDA":False, "PS1_JLDERECHA":False, "PS1_JRARRIBA":False, "PS1_JRABAJO":False, "PS1_JRIZQUIERDA":False, "PS1_JRDERECHA":False}
     while port.inWaiting() > 0:
         rcv = readlineCR(port)
-    if rcv == ";1CU:\r":
-        salida["PS1_CUADRADO"]=True
-    elif rcv == ";1TR:\r":
-        salida["PS1_TRIANGULO"]=True
-    elif rcv == ";1CI:\r":
-        salida["PS1_CIRCULO"]=True
-    elif rcv == ";1EQ:\r":
-        salida["PS1_EQUIS"]=True
-    elif rcv == ";1AR:\r":
-        salida["PS1_ARRIBA"]=True
-    elif rcv == ";1AB:\r":
-        salida["PS1_ABAJO"]=True
-    elif rcv == ";1IZ:\r":
-        salida["PS1_IZQUIERDA"]=True
-    elif rcv == ";1DE:\r":
-        salida["PS1_DERECHA"]=True
-    elif rcv == ";1L1:\r":
-        salida["PS1_L1"]=True
-    elif rcv == ";1R1:\r":
-        salida["PS1_R1"]=True
-    elif rcv == ";1L2:\r":
-        salida["PS1_L2"]=True
-    elif rcv == ";1R2:\r":
-        salida["PS1_R2"]=True
-    elif rcv == ";1L3:\r":
-        salida["PS1_L3"]=True
-    elif rcv == ";1R3:\r":
-        salida["PS1_R3"]=True
-    elif rcv == ";1ST:\r":
-        salida["PS1_START"]=True
-    elif rcv == ";1SE:\r":
-        salida["PS1_SELECT"]=True
-    elif rcv == ";1LU:\r":
-        salida["PS1_JLARRIBA"]=True
-    elif rcv == ";1LD:\r":
-        salida["PS1_JLABAJO"]=True
-    elif rcv == ";1LL:\r":
-        salida["PS1_JLIZQUIERDA"]=True
-    elif rcv == ";1LR:\r":
-        salida["PS1_JLDERECHA"]=True
-    elif rcv == ";1RU:\r":
-        salida["PS1_JRARRIBA"]=True
-    elif rcv == ";1RD:\r":
-        salida["PS1_JRABAJO"]=True
-    elif rcv == ";1RL:\r":
-        salida["PS1_JRIZQUIERDA"]=True
-    elif rcv == ";1RR:\r":
-        salida["PS1_JRDERECHA"]=True
+        if rcv == ";1CU:\r":
+            salida["PS1_CUADRADO"]=True
+        elif rcv == ";1TR:\r":
+            salida["PS1_TRIANGULO"]=True
+        elif rcv == ";1CI:\r":
+            salida["PS1_CIRCULO"]=True
+        elif rcv == ";1EQ:\r":
+            salida["PS1_EQUIS"]=True
+        elif rcv == ";1AR:\r":
+            salida["PS1_ARRIBA"]=True
+        elif rcv == ";1AB:\r":
+            salida["PS1_ABAJO"]=True
+        elif rcv == ";1IZ:\r":
+            salida["PS1_IZQUIERDA"]=True
+        elif rcv == ";1DE:\r":
+            salida["PS1_DERECHA"]=True
+        elif rcv == ";1L1:\r":
+            salida["PS1_L1"]=True
+        elif rcv == ";1R1:\r":
+            salida["PS1_R1"]=True
+        elif rcv == ";1L2:\r":
+            salida["PS1_L2"]=True
+        elif rcv == ";1R2:\r":
+            salida["PS1_R2"]=True
+        elif rcv == ";1L3:\r":
+            salida["PS1_L3"]=True
+        elif rcv == ";1R3:\r":
+            salida["PS1_R3"]=True
+        elif rcv == ";1ST:\r":
+            salida["PS1_START"]=True
+        elif rcv == ";1SE:\r":
+            salida["PS1_SELECT"]=True
+        elif rcv == ";1LU:\r":
+            salida["PS1_JLARRIBA"]=True
+        elif rcv == ";1LD:\r":
+            salida["PS1_JLABAJO"]=True
+        elif rcv == ";1LL:\r":
+            salida["PS1_JLIZQUIERDA"]=True
+        elif rcv == ";1LR:\r":
+            salida["PS1_JLDERECHA"]=True
+        elif rcv == ";1RU:\r":
+            salida["PS1_JRARRIBA"]=True
+        elif rcv == ";1RD:\r":
+            salida["PS1_JRABAJO"]=True
+        elif rcv == ";1RL:\r":
+            salida["PS1_JRIZQUIERDA"]=True
+        elif rcv == ";1RR:\r":
+            salida["PS1_JRDERECHA"]=True
     port.write(";1RE:")
     return salida
  
