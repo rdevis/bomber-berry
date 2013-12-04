@@ -8,7 +8,7 @@
 import pygame
 from pygame.locals import *
 import os, sys, random, math, time
-#import serial
+import serial
  
 # -----------
 # Constantes
@@ -20,9 +20,9 @@ BLOCK_SIZE = 16
 FPS = 30
 BOMB_TIME = 3
 
-PlayController = {"PS1_CUADRADO":False, "PS1_TRIANGULO":False, "PS1_CIRCULO":False, "PS1_EQUIS":False, "PS1_ARRIBA":False, "PS1_ABAJO":False, "PS1_IZQUIERDA":False, "PS1_DERECHA":False, "PS1_L1":False, "PS1_R1":False, "PS1_L2":False, "PS1_R2":False, "PS1_L3":False, "PS1_R3":False, "PS1_START":False, "PS1_SELECT":False, "PS1_JLARRIBA":False, "PS1_JLABAJO":False, "PS1_JLIZQUIERDA":False, "PS1_JLDERECHA":False, "PS1_JRARRIBA":False, "PS1_JRABAJO":False, "PS1_JRIZQUIERDA":False, "PS1_JRDERECHA":False}
+PlayController = {"PS1_CUADRADO":False, "PS1_TRIANGULO":False, "PS1_CIRCULO":False, "PS1_EQUIS":False, "PS1_ARRIBA":False, "PS1_ABAJO":False, "PS1_IZQUIERDA":False, "PS1_DERECHA":False, "PS1_L1":False, "PS1_R1":False, "PS1_L2":False, "PS1_R2":False, "PS1_L3":False, "PS1_R3":False, "PS1_START":False, "PS1_SELECT":False, "PS1_JLARRIBA":False, "PS1_JLABAJO":False, "PS1_JLIZQUIERDA":False, "PS1_JLDERECHA":False, "PS1_JRARRIBA":False, "PS1_JRABAJO":False, "PS1_JRIZQUIERDA":False, "PS1_JRDERECHA":False, "PS2_CUADRADO":False, "PS2_TRIANGULO":False, "PS2_CIRCULO":False, "PS2_EQUIS":False, "PS2_ARRIBA":False, "PS2_ABAJO":False, "PS2_IZQUIERDA":False, "PS2_DERECHA":False, "PS2_L1":False, "PS2_R1":False, "PS2_L2":False, "PS2_R2":False, "PS2_L3":False, "PS2_R3":False, "PS2_START":False, "PS2_SELECT":False, "PS2_JLARRIBA":False, "PS2_JLABAJO":False, "PS2_JLIZQUIERDA":False, "PS2_JLDERECHA":False, "PS2_JRARRIBA":False, "PS2_JRABAJO":False, "PS2_JRIZQUIERDA":False, "PS2_JRDERECHA":False}
 
-#port = serial.Serial("/dev/ttyAMA0", baudrate=57600, timeout=3.0)
+port = serial.Serial("/dev/ttyAMA0", baudrate=57600, timeout=3.0)
  
 # ------------------------------
 # Clases y Funciones utilizadas
@@ -161,55 +161,81 @@ class Game():
             if bomb.timer <= 0:
                 self.fires.add(Fire(bomb.rect.centerx, bomb.rect.centery))
                 bomb.kill()
+
         for fire in self.fires:
             fire.timer -= 1
-            if fire.timer <= 0:
-                fire.kill()
 
         #Calcula colisiones fuego
         for fire in self.fires:
             if self.matrix[fire.x+1][fire.y].__class__.__name__ == "Brick":
                 self.matrix[fire.x+1][fire.y].kill()
-                self.matrix[fire.x+1][fire.y] = 0
+                if fire.timer == 0:
+                    self.matrix[fire.x+1][fire.y] = 0
             elif self.matrix[fire.x+1][fire.y].__class__.__name__ != "Block":
                 if self.matrix[fire.x+2][fire.y].__class__.__name__ == "Brick":
                     self.matrix[fire.x+2][fire.y].kill()
-                    self.matrix[fire.x+2][fire.y] = 0
+                    if fire.timer == 0:
+                        self.matrix[fire.x+2][fire.y] = 0
 
             if self.matrix[fire.x-1][fire.y].__class__.__name__ == "Brick":
                 self.matrix[fire.x-1][fire.y].kill()
-                self.matrix[fire.x-1][fire.y] = 0
+                if fire.timer == 0:
+                    self.matrix[fire.x-1][fire.y] = 0
             elif self.matrix[fire.x-1][fire.y].__class__.__name__ != "Block":
                 if self.matrix[fire.x-2][fire.y].__class__.__name__ == "Brick":
                     self.matrix[fire.x-2][fire.y].kill()
-                    self.matrix[fire.x-2][fire.y] = 0
+                    if fire.timer == 0:
+                        self.matrix[fire.x-2][fire.y] = 0
 
             if self.matrix[fire.x][fire.y+1].__class__.__name__ == "Brick":
                 self.matrix[fire.x][fire.y+1].kill()
-                self.matrix[fire.x][fire.y+1] = 0
+                if fire.timer == 0:
+                    self.matrix[fire.x][fire.y+1] = 0
             elif self.matrix[fire.x][fire.y+1].__class__.__name__ != "Block":
                 if self.matrix[fire.x][fire.y+2].__class__.__name__ == "Brick":
                     self.matrix[fire.x][fire.y+2].kill()
-                    self.matrix[fire.x][fire.y+2] = 0
+                    if fire.timer == 0:
+                        self.matrix[fire.x][fire.y+2] = 0
 
             if self.matrix[fire.x][fire.y-1].__class__.__name__ == "Brick":
                 self.matrix[fire.x][fire.y-1].kill()
-                self.matrix[fire.x][fire.y-1] = 0
+                if fire.timer == 0:
+                    self.matrix[fire.x][fire.y-1] = 0
             elif self.matrix[fire.x][fire.y-1].__class__.__name__ != "Block":
                 if self.matrix[fire.x][fire.y-2].__class__.__name__ == "Brick":
                     self.matrix[fire.x][fire.y-2].kill()
-                    self.matrix[fire.x][fire.y-2] = 0
+                    if fire.timer == 0:
+                        self.matrix[fire.x][fire.y-2] = 0
 
             #Colisiones con jugadores
-            for player in self.players:
-                if fire.x+1 == player.x and fire.y == player.y:
-                    sys.exit(0)
-                if fire.x-1 == player.x and fire.y == player.y:
-                    sys.exit(0)
-                if fire.y+1 == player.y and fire.x == player.x:
-                    sys.exit(0)
-                if fire.y-1 == player.y and fire.x == player.x:
-                    sys.exit(0)
+            if fire.timer > 0:
+                for player in self.players:
+                    if fire.x+1 == player.x and fire.y == player.y:
+                        sys.exit(0)
+                    if self.matrix[fire.x+1][fire.y].__class__.__bases__[0].__name__ != "Tile":
+                        if fire.x+2 == player.x and fire.y == player.y:
+                            sys.exit(0)
+
+                    if fire.x-1 == player.x and fire.y == player.y:
+                        sys.exit(0)
+                    if self.matrix[fire.x-1][fire.y].__class__.__bases__[0].__name__ != "Tile":
+                        if fire.x-2 == player.x and fire.y == player.y:
+                            sys.exit(0)
+
+                    if fire.y+1 == player.y and fire.x == player.x:
+                        sys.exit(0)
+                    if self.matrix[fire.x][fire.y+1].__class__.__bases__[0].__name__ != "Tile":
+                        if fire.x == player.x and fire.y+2 == player.y:
+                            sys.exit(0)
+
+                    if fire.y-1 == player.y and fire.x == player.x:
+                        sys.exit(0)
+                    if self.matrix[fire.x][fire.y-1].__class__.__bases__[0].__name__ != "Tile":
+                        if fire.x == player.x and fire.y-2 == player.y:
+                            sys.exit(0)
+
+            if fire.timer <= 0:
+                fire.kill()
                             
 
         screen.fill((16,120,48))
@@ -292,7 +318,15 @@ class Game():
 
         player.rhead.centerx = player.rect.centerx
         player.rhead.y = player.rect.top-13
-        player.updatePosition()
+
+        bombaActual = 0
+        for bomb in self.bombs:
+            if player.rect.colliderect(bomb.rect):
+                bombaActual = bomb
+        for bomb in self.bombs2:
+            if player.rect.colliderect(bomb.rect):
+                bombaActual = bomb
+        player.updatePosition(bombaActual)
 
 class Tile(pygame.sprite.Sprite):
 
@@ -352,8 +386,7 @@ class Bomberman(Tile):
         self.rhead.centerx = self.rect.centerx
         self.rhead.y = self.rect.top-13
 
-    def updatePosition(self):
-        anteriorX = self.x; anteriorY = self.y
+    def updatePosition(self, bomb):
         if self.rect.centerx % BLOCK_SIZE < BLOCK_SIZE/2:
             pos = self.rect.centerx - self.rect.centerx % BLOCK_SIZE
             self.x = (pos - 16) / 16
@@ -366,8 +399,9 @@ class Bomberman(Tile):
         else:
             pos = self.rect.centery + (BLOCK_SIZE - self.rect.centery % BLOCK_SIZE)
             self.y = (pos - 32) / 16
-        if anteriorX != self.x or anteriorY != self.y:
+        if self.insideBomb == True and bomb == 0:
             self.insideBomb = False
+
 
 class Bomb(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -415,7 +449,7 @@ def main():
         clock.tick(FPS)
         
         # Posibles entradas del teclado
-        # PlayController = keysPS()
+        PlayController = keysPS()
         keys = pygame.key.get_pressed()
         if keys[K_ESCAPE]:
             sys.exit(0)
