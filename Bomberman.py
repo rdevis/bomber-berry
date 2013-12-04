@@ -22,7 +22,7 @@ BOMB_TIME = 3
 
 PlayController = {"PS1_CUADRADO":False, "PS1_TRIANGULO":False, "PS1_CIRCULO":False, "PS1_EQUIS":False, "PS1_ARRIBA":False, "PS1_ABAJO":False, "PS1_IZQUIERDA":False, "PS1_DERECHA":False, "PS1_L1":False, "PS1_R1":False, "PS1_L2":False, "PS1_R2":False, "PS1_L3":False, "PS1_R3":False, "PS1_START":False, "PS1_SELECT":False, "PS1_JLARRIBA":False, "PS1_JLABAJO":False, "PS1_JLIZQUIERDA":False, "PS1_JLDERECHA":False, "PS1_JRARRIBA":False, "PS1_JRABAJO":False, "PS1_JRIZQUIERDA":False, "PS1_JRDERECHA":False, "PS2_CUADRADO":False, "PS2_TRIANGULO":False, "PS2_CIRCULO":False, "PS2_EQUIS":False, "PS2_ARRIBA":False, "PS2_ABAJO":False, "PS2_IZQUIERDA":False, "PS2_DERECHA":False, "PS2_L1":False, "PS2_R1":False, "PS2_L2":False, "PS2_R2":False, "PS2_L3":False, "PS2_R3":False, "PS2_START":False, "PS2_SELECT":False, "PS2_JLARRIBA":False, "PS2_JLABAJO":False, "PS2_JLIZQUIERDA":False, "PS2_JLDERECHA":False, "PS2_JRARRIBA":False, "PS2_JRABAJO":False, "PS2_JRIZQUIERDA":False, "PS2_JRDERECHA":False}
 
-port = serial.Serial("/dev/ttyAMA0", baudrate=57600, timeout=3.0)
+#port = serial.Serial("/dev/ttyAMA0", baudrate=57600, timeout=3.0)
  
 # ------------------------------
 # Clases y Funciones utilizadas
@@ -449,7 +449,7 @@ def main():
         clock.tick(FPS)
         
         # Posibles entradas del teclado
-        PlayController = keysPS()
+        #PlayController = keysPS()
         keys = pygame.key.get_pressed()
         if keys[K_ESCAPE]:
             sys.exit(0)
@@ -475,6 +475,17 @@ def main():
         if PlayController["PS1_IZQUIERDA"] or PlayController["PS1_JLIZQUIERDA"]:
             game.movePlayer(game.player,-4,0)
         if PlayController["PS1_EQUIS"]:
+            game.putBomb(game.player)
+
+        if PlayController["PS2_ABAJO"] or PlayController["PS2_JLABAJO"]:
+            game.movePlayer(game.player,0,4)
+        if PlayController["PS2_ARRIBA"] or PlayController["PS2_JLARRIBA"]:
+            game.movePlayer(game.player,0,-4)
+        if PlayController["PS2_DERECHA"] or PlayController["PS2_JLDERECHA"]:
+            game.movePlayer(game.player,4,0)
+        if PlayController["PS2_IZQUIERDA"] or PlayController["PS2_JLIZQUIERDA"]:
+            game.movePlayer(game.player,-4,0)
+        if PlayController["PS2_EQUIS"]:
             game.putBomb(game.player)
 
         # Control del jugador 2
