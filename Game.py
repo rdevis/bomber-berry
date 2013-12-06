@@ -104,7 +104,7 @@ class Game():
         self.map[bomb.x][bomb.y] = None
 
         for direction in DIRECTIONS:
-            for pos in range(1,fire.expansion[DIRECTION]+1):
+            for pos in range(1,fire.expansion[direction]+1):
                 x,y = fire.position(direction, pos)
                 tile = self.map[x][y]
                 if tile:
@@ -113,12 +113,13 @@ class Game():
                     fire.expansion[direction] = pos-1
                 break
 
-    def checkFire(player, fire):
-        if player.x, player.y == fire.x, fire.y:
+    def checkFire(self, player, fire):
+        if player.x == fire.x and player.y == fire.y:
             return True
         for direction in DIRECTIONS:
             for cell in range(1,fire.expansion[direction]+1):
-                if player.x, player.y == fire.position(direction, cell):
+                x,y = fire.position(direction, cell)
+                if player.x == x and player.y == y:
                     return True
         return False
 

@@ -44,28 +44,28 @@ class Tile(pygame.sprite.Sprite):
         self.kill()
         return None
 
-    def position(d, pos = 1):
+    def position(self, d, pos = 1):
         if d == UP:
-            return up(pos)
+            return self.up(pos)
         elif d == RIGHT:
-            return right(pos)
+            return self.right(pos)
         elif d == DOWN:
-            return down(pos)
+            return self.down(pos)
         elif d == LEFT:
-            return left(pos)
+            return self.left(pos)
 
 
     def up(self, pos = 1):
-        return x,y-pos
+        return self.x,self.y-pos
 
     def right(self, pos = 1):
-        return x+pos,y
+        return self.x+pos,self.y
 
     def down(self, pos = 1):
-        return x,y+pos
+        return self.x,self.y+pos
 
     def left(self, pos = 1):
-        return x-pos,y
+        return self.x-pos,self.y
 
 class Block(Tile):
  
