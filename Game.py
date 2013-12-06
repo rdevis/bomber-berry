@@ -22,10 +22,11 @@ SCREEN_HEIGHT = 240
 FPS = 30
 BOMB_TIME = 3
 
-TOP = 0
+UP = 0
 RIGHT = 1
-BOTTOM = 2
+DOWN = 2
 LEFT = 3
+DIRECTIONS = [UP, RIGHT, DOWN, LEFT]
  
 # ------------------------------
 # Clases y Funciones utilizadas
@@ -102,41 +103,25 @@ class Game():
         bomb.kill()
         self.map[bomb.x][bomb.y] = None
 
-        # Up
-        for pos in range(1,fire.expansion[TOP]+1):
-            tile = self.map[fire.x][fire.y-pos]
-            if tile:
-                if tile.isBreakable:
-                    self.destroy(tile)
-                fire.expansion[TOP] = pos-1
+        for direction in DIRECTIONS:
+            for pos in range(1,fire.expansion[DIRECTION]+1):
+                x,y = fire.position(direction, pos)
+                tile = self.map[x][y]
+                if tile:
+                    if tile.isBreakable:
+                        self.destroy(tile)
+                    fire.expansion[direction] = pos-1
                 break
 
-        # Right
-        for pos in range(1,fire.expansion[RIGHT]+1):
-            tile = self.map[fire.x+pos][fire.y]
-            if tile:
-                if tile.isBreakable:
-                    self.destroy(tile)
-                fire.expansion[RIGHT] = pos-1
-                break
+    def checkFire(player, fire):
+        if player.x, player.y == fire.x, fire.y:
+            return True
+        for direction in DIRECTIONS:
+            for cell in range(1,fire.expansion[direction]+1):
+                if player.x, player.y == fire.position(direction, cell):
+                    return True
+        return False
 
-        # Down
-        for pos in range(1,fire.expansion[BOTTOM]+1):
-            tile = self.map[fire.x][fire.y+pos]
-            if tile:
-                if tile.isBreakable:
-                    self.destroy(tile)
-                fire.expansion[BOTTOM] = pos-1
-                break
-
-        # Left
-        for pos in range(1,fire.expansion[LEFT]+1):
-            tile = self.map[fire.x-pos][fire.y]
-            if tile:
-                if tile.isBreakable:
-                    self.destroy(tile)
-                fire.expansion[LEFT] = pos-1
-                break
 
     def drawGame(self, screen):
         for bomb in self.bombs:
@@ -148,34 +133,10 @@ class Game():
             fire.timer -= 1
             if fire.timer <= 0:
                 fire.kill()
-
-        for player in self.players:
-            for fire in self.fires:
-
-                #Center
-                if fire.x == player.x and fire.y == player.y:
-                    sys.exit(0)
-
-                # Up
-                for pos in range(1,fire.expansion[TOP]+1):
-                    if fire.x == player.x and fire.y-pos == player.y:
+            else:
+                for player in self.players:
+                    if self.checkFire(player, fire):
                         sys.exit(0)
-
-                # Right
-                for pos in range(1,fire.expansion[RIGHT]+1):
-                    if fire.x+pos == player.x and fire.y == player.y:
-                        sys.exit(0)
-
-                # Down
-                for pos in range(1,fire.expansion[BOTTOM]+1):
-                    if fire.x == player.x and fire.y+pos == player.y:
-                        sys.exit(0)
-
-                # Left
-                for pos in range(1,fire.expansion[LEFT]+1):
-                    if fire.x-pos == player.x and fire.y == player.y:
-                        sys.exit(0)
-                            
 
         screen.fill((16,120,48))
         self.tiles.draw(screen)

@@ -4,6 +4,11 @@
 
 import pygame, os, sys
 
+UP = 0
+RIGHT = 1
+DOWN = 2
+LEFT = 3
+
 def load_image(nombre, dir_imagen, alpha=False):
     ruta = os.path.join(dir_imagen, nombre)
     try:
@@ -38,6 +43,29 @@ class Tile(pygame.sprite.Sprite):
     def destroy(self):
         self.kill()
         return None
+
+    def position(d, pos = 1):
+        if d == UP:
+            return up(pos)
+        elif d == RIGHT:
+            return right(pos)
+        elif d == DOWN:
+            return down(pos)
+        elif d == LEFT:
+            return left(pos)
+
+
+    def up(self, pos = 1):
+        return x,y-pos
+
+    def right(self, pos = 1):
+        return x+pos,y
+
+    def down(self, pos = 1):
+        return x,y+pos
+
+    def left(self, pos = 1):
+        return x-pos,y
 
 class Block(Tile):
  
