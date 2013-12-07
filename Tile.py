@@ -90,6 +90,7 @@ class Bomberman(Tile):
         self.bombExpansion = 2
         self.bombs = []
         self.insideBomb = None
+        self.playerNumber = number
 
         # Head part
         self.head = load_image("head%d.png" % (number), "sprites/", alpha=True)

@@ -51,9 +51,20 @@ class Game():
         self.bombs = pygame.sprite.Group()
         self.fires = pygame.sprite.Group()
         self.powerups = pygame.sprite.Group()
+        self.win = None
 
-        self.map = [[None]*50 for i in range(50)]
+        self.map = [[None]*13 for i in range(19)]
         self.createMap()
+
+    def startGame(self, screen):
+        clock = pygame.time.Clock()
+        pygame.key.set_repeat(1, 15)
+     
+        while self.win is None:
+            clock.tick(FPS)
+            self.checkEvents()
+            self.drawGame(screen)
+        return self.win
 
     def createMap(self):
         for x in range(0,19):
@@ -111,7 +122,7 @@ class Game():
                     if tile.isBreakable:
                         self.destroy(tile)
                     fire.expansion[direction] = pos-1
-                break
+                    break
 
     def checkFire(self, player, fire):
         if player.x == fire.x and player.y == fire.y:
@@ -137,7 +148,8 @@ class Game():
             else:
                 for player in self.players:
                     if self.checkFire(player, fire):
-                        sys.exit(0)
+                        print player.playerNumber
+                        self.win = 1 if player.playerNumber is 2 else 2
 
         screen.fill((16,120,48))
         self.tiles.draw(screen)
@@ -166,7 +178,6 @@ class Game():
                 powerup.activate(player)
                 powerup.kill()
                 self.map[powerup.x][powerup.y] = None
-
         for tile in self.tiles:
             if not tile.isCrossable and player.rect.colliderect(tile.rect):
                 if dx > 0: # Moving right; Hit the left side of the tile
@@ -193,88 +204,103 @@ class Game():
 
         player.updatePosition()
 
+    def checkEvents(self):
+        if SERIAL:
+            PlayController = Serial.keysPS()
+        else:
+            PlayController = {"PS1_CUADRADO":False, "PS1_TRIANGULO":False, "PS1_CIRCULO":False, "PS1_EQUIS":False, "PS1_ARRIBA":False, "PS1_ABAJO":False, "PS1_IZQUIERDA":False, "PS1_DERECHA":False, "PS1_L1":False, "PS1_R1":False, "PS1_L2":False, "PS1_R2":False, "PS1_L3":False, "PS1_R3":False, "PS1_START":False, "PS1_SELECT":False, "PS1_JLARRIBA":False, "PS1_JLABAJO":False, "PS1_JLIZQUIERDA":False, "PS1_JLDERECHA":False, "PS1_JRARRIBA":False, "PS1_JRABAJO":False, "PS1_JRIZQUIERDA":False, "PS1_JRDERECHA":False, "PS2_CUADRADO":False, "PS2_TRIANGULO":False, "PS2_CIRCULO":False, "PS2_EQUIS":False, "PS2_ARRIBA":False, "PS2_ABAJO":False, "PS2_IZQUIERDA":False, "PS2_DERECHA":False, "PS2_L1":False, "PS2_R1":False, "PS2_L2":False, "PS2_R2":False, "PS2_L3":False, "PS2_R3":False, "PS2_START":False, "PS2_SELECT":False, "PS2_JLARRIBA":False, "PS2_JLABAJO":False, "PS2_JLIZQUIERDA":False, "PS2_JLDERECHA":False, "PS2_JRARRIBA":False, "PS2_JRABAJO":False, "PS2_JRIZQUIERDA":False, "PS2_JRDERECHA":False}
+        keys = pygame.key.get_pressed()
+        if keys[K_ESCAPE]:
+            sys.exit(0)
+
+        # Player 1 controls
+        if keys[K_DOWN]:
+            self.movePlayer(self.player,0,4)
+        if keys[K_UP]:
+            self.movePlayer(self.player,0,-4)
+        if keys[K_RIGHT]:
+            self.movePlayer(self.player,4,0)
+        if keys[K_LEFT]:
+            self.movePlayer(self.player,-4,0)
+        if keys[K_RCTRL]:
+            self.putBomb(self.player)
+
+        if PlayController["PS1_ABAJO"] or PlayController["PS1_JLABAJO"]:
+            self.movePlayer(self.player,0,4)
+        if PlayController["PS1_ARRIBA"] or PlayController["PS1_JLARRIBA"]:
+            self.movePlayer(self.player,0,-4)
+        if PlayController["PS1_DERECHA"] or PlayController["PS1_JLDERECHA"]:
+            self.movePlayer(self.player,4,0)
+        if PlayController["PS1_IZQUIERDA"] or PlayController["PS1_JLIZQUIERDA"]:
+            self.movePlayer(self.player,-4,0)
+        if PlayController["PS1_EQUIS"]:
+            self.putBomb(self.player)
+
+        # Player 2 controls
+        if keys[K_s]:
+            self.movePlayer(self.player2,0,4)
+        if keys[K_w]:
+            self.movePlayer(self.player2,0,-4)
+        if keys[K_d]:
+            self.movePlayer(self.player2,4,0)
+        if keys[K_a]:
+            self.movePlayer(self.player2,-4,0)
+        if keys[K_LCTRL]:
+            self.putBomb(self.player2)
+
+        if PlayController["PS2_ABAJO"] or PlayController["PS2_JLABAJO"]:
+            self.movePlayer(self.player2,0,4)
+        if PlayController["PS2_ARRIBA"] or PlayController["PS2_JLARRIBA"]:
+            self.movePlayer(self.player2,0,-4)
+        if PlayController["PS2_DERECHA"] or PlayController["PS2_JLDERECHA"]:
+            self.movePlayer(self.player2,4,0)
+        if PlayController["PS2_IZQUIERDA"] or PlayController["PS2_JLIZQUIERDA"]:
+            self.movePlayer(self.player2,-4,0)
+        if PlayController["PS2_EQUIS"]:
+            self.putBomb(self.player2)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit(0)
+
 # ------------------------------
 # Funcion principal del juego
 # ------------------------------
  
  
 def main():
-    PlayController = {"PS1_CUADRADO":False, "PS1_TRIANGULO":False, "PS1_CIRCULO":False, "PS1_EQUIS":False, "PS1_ARRIBA":False, "PS1_ABAJO":False, "PS1_IZQUIERDA":False, "PS1_DERECHA":False, "PS1_L1":False, "PS1_R1":False, "PS1_L2":False, "PS1_R2":False, "PS1_L3":False, "PS1_R3":False, "PS1_START":False, "PS1_SELECT":False, "PS1_JLARRIBA":False, "PS1_JLABAJO":False, "PS1_JLIZQUIERDA":False, "PS1_JLDERECHA":False, "PS1_JRARRIBA":False, "PS1_JRABAJO":False, "PS1_JRIZQUIERDA":False, "PS1_JRDERECHA":False, "PS2_CUADRADO":False, "PS2_TRIANGULO":False, "PS2_CIRCULO":False, "PS2_EQUIS":False, "PS2_ARRIBA":False, "PS2_ABAJO":False, "PS2_IZQUIERDA":False, "PS2_DERECHA":False, "PS2_L1":False, "PS2_R1":False, "PS2_L2":False, "PS2_R2":False, "PS2_L3":False, "PS2_R3":False, "PS2_START":False, "PS2_SELECT":False, "PS2_JLARRIBA":False, "PS2_JLABAJO":False, "PS2_JLIZQUIERDA":False, "PS2_JLDERECHA":False, "PS2_JRARRIBA":False, "PS2_JRABAJO":False, "PS2_JRIZQUIERDA":False, "PS2_JRDERECHA":False}
     pygame.init()
     # creamos la ventana y le indicamos un titulo:
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("BomberPi")
  
-    # cargamos los objetos
-    game = Game()
- 
-    clock = pygame.time.Clock()
-    pygame.key.set_repeat(1, 15)
- 
-    # el bucle principal del juego
     while True:
-        clock.tick(FPS)
-        
-        # Posibles entradas del teclado
-        if SERIAL:
-            PlayController = Serial.keysPS()
-        keys = pygame.key.get_pressed()
-        if keys[K_ESCAPE]:
-            sys.exit(0)
+        game = Game()
+        whoWin = game.startGame(screen)
 
-        # Control del jugador 1
-        if keys[K_DOWN]:
-            game.movePlayer(game.player,0,4)
-        if keys[K_UP]:
-            game.movePlayer(game.player,0,-4)
-        if keys[K_RIGHT]:
-            game.movePlayer(game.player,4,0)
-        if keys[K_LEFT]:
-            game.movePlayer(game.player,-4,0)
-        if keys[K_RCTRL]:
-            game.putBomb(game.player)
-
-
-        # Control del jugador 2
-        if keys[K_s]:
-            game.movePlayer(game.player2,0,4)
-        if keys[K_w]:
-            game.movePlayer(game.player2,0,-4)
-        if keys[K_d]:
-            game.movePlayer(game.player2,4,0)
-        if keys[K_a]:
-            game.movePlayer(game.player2,-4,0)
-        if keys[K_LCTRL]:
-            game.putBomb(game.player2)
-
-        if PlayController["PS1_ABAJO"] or PlayController["PS1_JLABAJO"]:
-            game.movePlayer(game.player,0,4)
-        if PlayController["PS1_ARRIBA"] or PlayController["PS1_JLARRIBA"]:
-            game.movePlayer(game.player,0,-4)
-        if PlayController["PS1_DERECHA"] or PlayController["PS1_JLDERECHA"]:
-            game.movePlayer(game.player,4,0)
-        if PlayController["PS1_IZQUIERDA"] or PlayController["PS1_JLIZQUIERDA"]:
-            game.movePlayer(game.player,-4,0)
-        if PlayController["PS1_EQUIS"]:
-            game.putBomb(game.player)
-
-        if PlayController["PS2_ABAJO"] or PlayController["PS2_JLABAJO"]:
-            game.movePlayer(game.player2,0,4)
-        if PlayController["PS2_ARRIBA"] or PlayController["PS2_JLARRIBA"]:
-            game.movePlayer(game.player2,0,-4)
-        if PlayController["PS2_DERECHA"] or PlayController["PS2_JLDERECHA"]:
-            game.movePlayer(game.player2,4,0)
-        if PlayController["PS2_IZQUIERDA"] or PlayController["PS2_JLIZQUIERDA"]:
-            game.movePlayer(game.player2,-4,0)
-        if PlayController["PS2_EQUIS"]:
-            game.putBomb(game.player2)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+        #End of game
+        scoreBadge=pygame.image.load("scoreframe.png")
+        scoreBadge.convert_alpha()
+        left=18;top=60
+        screen.blit(scoreBadge,(left,top))
+        scoreFont=pygame.font.Font(None,52)
+        scoreFont2=pygame.font.Font(None,22)
+        statusText=scoreFont.render('Player '+str(whoWin)+' wins',True,(0,0,0),(231,230,33))
+        statusText2=scoreFont2.render('Press r to restart',True,(0,0,0),(231,230,33))
+        screen.blit(statusText,(54,110))
+        screen.blit(statusText2,(104,150))
+        pygame.display.flip()
+        ## Wait for the player to restart
+        restart = False
+        while not restart:
+            keys = pygame.key.get_pressed()
+            if keys[K_ESCAPE]:
                 sys.exit(0)
-
-        # actualizamos la pantalla
-        game.drawGame(screen)
+            if keys[K_r]:
+                restart = True
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit()
  
 if __name__ == "__main__":
     main()
