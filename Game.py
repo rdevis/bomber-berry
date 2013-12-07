@@ -124,6 +124,8 @@ class Game():
                     fire.expansion[direction] = pos-1
                     break
 
+        fire.updateSprite()
+
     def checkFire(self, player, fire):
         if player.x == fire.x and player.y == fire.y:
             return True

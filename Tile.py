@@ -8,6 +8,7 @@ UP = 0
 RIGHT = 1
 DOWN = 2
 LEFT = 3
+DIRECTIONS = [UP, RIGHT, DOWN, LEFT]
 
 def load_image(nombre, dir_imagen, alpha=False):
     ruta = os.path.join(dir_imagen, nombre)
@@ -134,10 +135,42 @@ class Bomb(Tile):
 
 class Fire(Tile):
     def __init__(self, x, y, time, expansion):
-        Tile.__init__(self, "fire.png", True, x, y, False, True)
+        Tile.__init__(self, "fire/fire.png", True, x, y, False, True)
         self.timer = time
         # Starts from top, right, bottom, left
+        self.max_expansion = expansion
         self.expansion = [expansion, expansion, expansion, expansion]
+
+        width = height = 16*(2*expansion+1)
+        self.image = pygame.Surface([width,height], pygame.SRCALPHA, 32)
+        self.image = self.image.convert_alpha()
+        self.rect = self.image.get_rect()
+        self.rect.centerx = x
+        self.rect.centery = y
+
+    def getFirePosition(self, direction, pos):
+        if direction == UP:
+            return (self.max_expansion*16,(self.max_expansion-pos)*16)
+        if direction == RIGHT:
+            return ((self.max_expansion+pos)*16,self.max_expansion*16)
+        if direction == DOWN:
+            return (self.max_expansion*16,(self.max_expansion+pos)*16)
+        if direction == LEFT:
+            return ((self.max_expansion-pos)*16,self.max_expansion*16)
+
+    def updateSprite(self):
+        center = load_image("fire-center.png", "sprites/fire", alpha=True)
+        self.image.blit(center, (self.max_expansion*16,self.max_expansion*16))
+
+        fireTypes = 'up right down left'.split()
+        for direction in DIRECTIONS:
+            fire_image = load_image('fire-%s.png' % fireTypes[direction], "sprites/fire", alpha=True)
+            fire_end = load_image('fire-%s-end.png' % fireTypes[direction], "sprites/fire", alpha=True)
+            for pos in range(1, self.expansion[direction]+1):
+                if pos < self.max_expansion:
+                    self.image.blit(fire_image, self.getFirePosition(direction, pos))
+                else:
+                    self.image.blit(fire_end, self.getFirePosition(direction, pos))
 
 class BombPower(Tile):
     def __init__(self, x, y):
