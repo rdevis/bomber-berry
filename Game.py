@@ -82,17 +82,19 @@ class Game():
                     self.tiles.add(b)
                     self.map[x][y] = b
                 # Ladrillos al azar
-                elif random.randint(1,10) == 5 and (x > 2 or y > 2) and (x < 16 or y < 10):
+                elif random.randint(1,8) == 4 and (x > 2 or y > 2) and (x < 16 or y < 10):
                     b = Tile.Brick(xGrid,yGrid,self.getRandomPowerUp(xGrid,yGrid))
                     self.tiles.add(b)
                     self.map[x][y] = b
 
     def getRandomPowerUp(self,x,y):
-        n = random.randint(1,3)
-        if n == 1:
+        n = random.randint(1,21)
+        if n < 9:
             return Tile.BombPower(x,y)
-        elif n == 2:
+        elif n < 15:
             return Tile.FirePower(x,y)
+        elif n == 15:
+            return Tile.SpeedPower(x,y)
         else:
             return None
 
@@ -216,47 +218,47 @@ class Game():
 
         # Player 1 controls
         if keys[K_DOWN]:
-            self.movePlayer(self.player,0,4)
+            self.movePlayer(self.player,0,4*self.player.speed)
         if keys[K_UP]:
-            self.movePlayer(self.player,0,-4)
+            self.movePlayer(self.player,0,-4*self.player.speed)
         if keys[K_RIGHT]:
-            self.movePlayer(self.player,4,0)
+            self.movePlayer(self.player,4*self.player.speed,0)
         if keys[K_LEFT]:
-            self.movePlayer(self.player,-4,0)
+            self.movePlayer(self.player,-4*self.player.speed,0)
         if keys[K_RCTRL]:
             self.putBomb(self.player)
 
         if PlayController["PS1_ABAJO"] or PlayController["PS1_JLABAJO"]:
-            self.movePlayer(self.player,0,4)
+            self.movePlayer(self.player,0,4*self.player.speed)
         if PlayController["PS1_ARRIBA"] or PlayController["PS1_JLARRIBA"]:
-            self.movePlayer(self.player,0,-4)
+            self.movePlayer(self.player,0,-4*self.player.speed)
         if PlayController["PS1_DERECHA"] or PlayController["PS1_JLDERECHA"]:
-            self.movePlayer(self.player,4,0)
+            self.movePlayer(self.player,4*self.player.speed,0)
         if PlayController["PS1_IZQUIERDA"] or PlayController["PS1_JLIZQUIERDA"]:
-            self.movePlayer(self.player,-4,0)
+            self.movePlayer(self.player,-4*self.player.speed,0)
         if PlayController["PS1_EQUIS"]:
             self.putBomb(self.player)
 
         # Player 2 controls
         if keys[K_s]:
-            self.movePlayer(self.player2,0,4)
+            self.movePlayer(self.player2,0,4*self.player.speed)
         if keys[K_w]:
-            self.movePlayer(self.player2,0,-4)
+            self.movePlayer(self.player2,0,-4*self.player.speed)
         if keys[K_d]:
-            self.movePlayer(self.player2,4,0)
+            self.movePlayer(self.player2,4*self.player.speed,0)
         if keys[K_a]:
-            self.movePlayer(self.player2,-4,0)
+            self.movePlayer(self.player2,-4*self.player.speed,0)
         if keys[K_LCTRL]:
             self.putBomb(self.player2)
 
         if PlayController["PS2_ABAJO"] or PlayController["PS2_JLABAJO"]:
-            self.movePlayer(self.player2,0,4)
+            self.movePlayer(self.player2,0,4*self.player.speed)
         if PlayController["PS2_ARRIBA"] or PlayController["PS2_JLARRIBA"]:
-            self.movePlayer(self.player2,0,-4)
+            self.movePlayer(self.player2,0,-4*self.player.speed)
         if PlayController["PS2_DERECHA"] or PlayController["PS2_JLDERECHA"]:
-            self.movePlayer(self.player2,4,0)
+            self.movePlayer(self.player2,4*self.player.speed,0)
         if PlayController["PS2_IZQUIERDA"] or PlayController["PS2_JLIZQUIERDA"]:
-            self.movePlayer(self.player2,-4,0)
+            self.movePlayer(self.player2,-4*self.player.speed,0)
         if PlayController["PS2_EQUIS"]:
             self.putBomb(self.player2)
 

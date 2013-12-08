@@ -92,6 +92,7 @@ class Bomberman(Tile):
         self.bombs = []
         self.insideBomb = None
         self.playerNumber = number
+        self.speed = 1
 
         # Head part
         self.head = load_image("head%d.png" % (number), "sprites/", alpha=True)
@@ -186,8 +187,13 @@ class FirePower(Tile):
     def activate(self, player):
         player.bombExpansion = player.bombExpansion + 1
 
+class SpeedPower(Tile):
+    def __init__(self, x, y):
+        Tile.__init__(self, "powerspeed.png", False, x, y, True, True)
 
-
+    def activate(self, player):
+        if player.speed == 1:
+            player.speed = 2
 
 
 
