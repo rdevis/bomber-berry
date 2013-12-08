@@ -150,7 +150,6 @@ class Game():
             else:
                 for player in self.players:
                     if self.checkFire(player, fire):
-                        print player.playerNumber
                         self.win = 1 if player.playerNumber is 2 else 2
 
         screen.fill((16,120,48))
@@ -165,7 +164,7 @@ class Game():
         pygame.display.flip()
 
     def putBomb(self, player):
-        if not self.map[player.x][player.y]:
+        if not self.map[player.x][player.y] and not pygame.sprite.spritecollideany(player, self.bombs):
             bomb = player.createBomb(FPS*BOMB_TIME)
             if bomb:
                 self.bombs.add(bomb)
