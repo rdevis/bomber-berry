@@ -88,14 +88,15 @@ class Game():
                     self.map[x][y] = b
 
     def getRandomPowerUp(self,x,y):
-        n = random.randint(1,21)
+        n = random.randint(1,27)
         if n < 9: 
             return Tile.BombPower(x,y)
         elif n < 15:
-            #return Tile.FirePower(x,y)
-            return Tile.TransportPower(x,y)
+            return Tile.FirePower(x,y)
         elif n == 15:
             return Tile.SpeedPower(x,y)
+        elif n < 19:
+            return Tile.TransportPower(x,y)
         else:
             return None
 
@@ -174,7 +175,10 @@ class Game():
                 self.map[bomb.x][bomb.y] = bomb
 
     def transportPlayer(self, player):
-        x,y = player.getSpriteCoordinates(random.randint(1,19), random.randint(1,12))
+        while True:
+            x,y = player.getSpriteCoordinates(random.randint(1,19), random.randint(1,12))
+            if self.map[x][y] is None:
+                break
         player.rect.centerx = x
         player.rect.centery = y
         player.updatePosition()
@@ -248,6 +252,8 @@ class Game():
             self.movePlayer(self.player,-4*self.player.speed,0)
         if PlayController["PS1_EQUIS"]:
             self.putBomb(self.player)
+        if PlayController["PS1_CIRCULO"] and self.player.transport:
+            self.transportPlayer(self.player)
 
         # Player 2 controls
         if keys[K_s]:
@@ -260,6 +266,8 @@ class Game():
             self.movePlayer(self.player2,-4*self.player2.speed,0)
         if keys[K_LCTRL]:
             self.putBomb(self.player2)
+        if keys[K_LSHIFT] and self.player2.transport:
+            self.transportPlayer(self.player2)
 
         if PlayController["PS2_ABAJO"] or PlayController["PS2_JLABAJO"]:
             self.movePlayer(self.player2,0,4*self.player.speed)
@@ -271,6 +279,8 @@ class Game():
             self.movePlayer(self.player2,-4*self.player.speed,0)
         if PlayController["PS2_EQUIS"]:
             self.putBomb(self.player2)
+        if PlayController["PS2_CIRCULO"] and self.player2.transport:
+            self.transportPlayer(self.player2)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
