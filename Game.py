@@ -5,7 +5,7 @@
 # Importacion de los módulos
 # ---------------------------
 
-SERIAL = False
+SERIAL = True
  
 import pygame
 from pygame.locals import *
@@ -89,7 +89,7 @@ class Game():
 
     def getRandomPowerUp(self,x,y):
         n = random.randint(1,21)
-        if n < 9:
+        if n < 9: 
             return Tile.BombPower(x,y)
         elif n < 15:
             return Tile.FirePower(x,y)
@@ -241,13 +241,13 @@ class Game():
 
         # Player 2 controls
         if keys[K_s]:
-            self.movePlayer(self.player2,0,4*self.player.speed)
+            self.movePlayer(self.player2,0,4*self.player2.speed)
         if keys[K_w]:
-            self.movePlayer(self.player2,0,-4*self.player.speed)
+            self.movePlayer(self.player2,0,-4*self.player2.speed)
         if keys[K_d]:
-            self.movePlayer(self.player2,4*self.player.speed,0)
+            self.movePlayer(self.player2,4*self.player2.speed,0)
         if keys[K_a]:
-            self.movePlayer(self.player2,-4*self.player.speed,0)
+            self.movePlayer(self.player2,-4*self.player2.speed,0)
         if keys[K_LCTRL]:
             self.putBomb(self.player2)
 
@@ -296,10 +296,15 @@ def main():
         ## Wait for the player to restart
         restart = False
         while not restart:
+	    if SERIAL:
+        	PlayController = Serial.keysPS()
+	    else:
+                PlayController = {"PS1_CUADRADO":False, "PS1_TRIANGULO":False, "PS1_CIRCULO":False, "PS1_EQUIS":False, "PS1_ARRIBA":False, "PS1_ABAJO":False, "PS1_IZQUIERDA":False, "PS1_DERECHA":False, "PS1_L1":False, "PS1_R1":False, "PS1_L2":False, "PS1_R2":False, "PS1_L3":False, "PS1_R3":False, "PS1_START":False, "PS1_SELECT":False, "PS1_JLARRIBA":False, "PS1_JLABAJO":False, "PS1_JLIZQUIERDA":False, "PS1_JLDERECHA":False, "PS1_JRARRIBA":False, "PS1_JRABAJO":False, "PS1_JRIZQUIERDA":False, "PS1_JRDERECHA":False, "PS2_CUADRADO":False, "PS2_TRIANGULO":False, "PS2_CIRCULO":False, "PS2_EQUIS":False, "PS2_ARRIBA":False, "PS2_ABAJO":False, "PS2_IZQUIERDA":False, "PS2_DERECHA":False, "PS2_L1":False, "PS2_R1":False, "PS2_L2":False, "PS2_R2":False, "PS2_L3":False, "PS2_R3":False, "PS2_START":False, "PS2_SELECT":False, "PS2_JLARRIBA":False, "PS2_JLABAJO":False, "PS2_JLIZQUIERDA":False, "PS2_JLDERECHA":False, "PS2_JRARRIBA":False, "PS2_JRABAJO":False, "PS2_JRIZQUIERDA":False, "PS2_JRDERECHA":False}
+
             keys = pygame.key.get_pressed()
             if keys[K_ESCAPE]:
                 sys.exit(0)
-            if keys[K_r]:
+            if keys[K_r] or PlayController["PS1_START"] or PlayController["PS2_START"]:
                 restart = True
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
