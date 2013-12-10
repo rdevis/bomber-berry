@@ -9,7 +9,7 @@ SERIAL = False
  
 import pygame
 from pygame.locals import *
-import Tile, os, sys, random, math, time
+import Tile, Hud, os, sys, random, math, time
 if SERIAL:
     import Serial
  
@@ -47,6 +47,7 @@ class Game():
         self.player2 = Tile.Bomberman(288,208,2)
         self.players = [self.player, self.player2]
 
+        self.hud = Hud.Hud()
         self.tiles = pygame.sprite.Group()
         self.bombs = pygame.sprite.Group()
         self.fires = pygame.sprite.Group()
@@ -165,6 +166,7 @@ class Game():
         screen.blit(self.player.head, self.player.rhead)
         screen.blit(self.player2.image, self.player2.rect)
         screen.blit(self.player2.head, self.player2.rhead)
+        self.hud.draw(screen)
         pygame.display.flip()
 
     def putBomb(self, player):
@@ -176,12 +178,16 @@ class Game():
 
     def transportPlayer(self, player):
         while True:
-            x,y = player.getSpriteCoordinates(random.randint(1,19), random.randint(1,12))
+            x = random.randint(1,18)
+            y = random.randint(1,12)
             if self.map[x][y] is None:
                 break
-        player.rect.centerx = x
-        player.rect.centery = y
+        xr, yr = player.getSpriteCoordinates(x,y)
+        player.rect.centerx = xr
+        player.rect.centery = yr
         player.updatePosition()
+        player.transport = False
+        self.hud.removePower(player.number)
 
     def movePlayer(self, player, dx, dy):
         player.rect.centerx += dx
@@ -212,6 +218,8 @@ class Game():
                 player.insideBomb = None
         for powerup in self.powerups:
             if player.rect.colliderect(powerup.rect):
+                if issubclass(powerup.__class__, Tile.TransportPower):
+                    self.hud.putPower(player.number)
                 powerup.activate(player)
                 powerup.kill()
                 self.map[powerup.x][powerup.y] = None

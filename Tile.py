@@ -87,6 +87,7 @@ class Bomberman(Tile):
 
     def __init__(self, x, y, number):
         Tile.__init__(self, "body%d.png" % (number), True, x, y, True, True)
+        self.number = number
         self.maxBombs = 1
         self.bombExpansion = 2
         self.bombs = []
