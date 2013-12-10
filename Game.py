@@ -5,7 +5,7 @@
 # Importacion de los módulos
 # ---------------------------
 
-SERIAL = True
+SERIAL = False
  
 import pygame
 from pygame.locals import *
@@ -92,7 +92,8 @@ class Game():
         if n < 9: 
             return Tile.BombPower(x,y)
         elif n < 15:
-            return Tile.FirePower(x,y)
+            #return Tile.FirePower(x,y)
+            return Tile.TransportPower(x,y)
         elif n == 15:
             return Tile.SpeedPower(x,y)
         else:
@@ -172,15 +173,16 @@ class Game():
                 self.bombs.add(bomb)
                 self.map[bomb.x][bomb.y] = bomb
 
+    def transportPlayer(self, player):
+        x,y = player.getSpriteCoordinates(random.randint(1,19), random.randint(1,12))
+        player.rect.centerx = x
+        player.rect.centery = y
+        player.updatePosition()
+
     def movePlayer(self, player, dx, dy):
         player.rect.centerx += dx
         player.rect.centery += dy
 
-        for powerup in self.powerups:
-            if player.rect.colliderect(powerup.rect):
-                powerup.activate(player)
-                powerup.kill()
-                self.map[powerup.x][powerup.y] = None
         for tile in self.tiles:
             if not tile.isCrossable and player.rect.colliderect(tile.rect):
                 if dx > 0: # Moving right; Hit the left side of the tile
@@ -204,6 +206,11 @@ class Game():
                         player.rect.top = bomb.rect.bottom
             elif bomb == player.insideBomb:
                 player.insideBomb = None
+        for powerup in self.powerups:
+            if player.rect.colliderect(powerup.rect):
+                powerup.activate(player)
+                powerup.kill()
+                self.map[powerup.x][powerup.y] = None
 
         player.updatePosition()
 
@@ -227,6 +234,9 @@ class Game():
             self.movePlayer(self.player,-4*self.player.speed,0)
         if keys[K_RCTRL]:
             self.putBomb(self.player)
+        if keys[K_RSHIFT] and self.player.transport:
+            self.transportPlayer(self.player)
+
 
         if PlayController["PS1_ABAJO"] or PlayController["PS1_JLABAJO"]:
             self.movePlayer(self.player,0,4*self.player.speed)

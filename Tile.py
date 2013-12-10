@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
   
 
-import pygame, os, sys
+import pygame, os, sys, random
 
 UP = 0
 RIGHT = 1
@@ -93,6 +93,7 @@ class Bomberman(Tile):
         self.insideBomb = None
         self.playerNumber = number
         self.speed = 1
+        self.transport = False
 
         # Head part
         self.head = load_image("head%d.png" % (number), "sprites/", alpha=True)
@@ -194,6 +195,13 @@ class SpeedPower(Tile):
     def activate(self, player):
         if player.speed == 1:
             player.speed = 2
+
+class TransportPower(Tile):
+    def __init__(self, x, y):
+        Tile.__init__(self, "powertransport.png", False, x, y, True, True)
+
+    def activate(self, player):
+        player.transport = True
 
 
 
