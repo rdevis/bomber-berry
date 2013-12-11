@@ -21,6 +21,7 @@ SCREEN_WIDTH = 320
 SCREEN_HEIGHT = 240
 FPS = 30
 BOMB_TIME = 3
+TIME_LIMIT = 15
 
 UP = 0
 RIGHT = 1
@@ -57,14 +58,21 @@ class Game():
         self.map = [[None]*13 for i in range(19)]
         self.createMap()
 
+        self.tock = 0
+
+    def timeLeft(self):
+        return TIME_LIMIT-self.tock/FPS
+
     def startGame(self, screen):
         clock = pygame.time.Clock()
         pygame.key.set_repeat(1, 15)
-     
-        while self.win is None:
+        while self.win is None and self.timeLeft() >= 0:
             clock.tick(FPS)
             self.checkEvents()
             self.drawGame(screen)
+            self.tock += 1
+        if self.timeLeft() < 0:
+            return -1
         return self.win
 
     def createMap(self):
@@ -166,7 +174,8 @@ class Game():
         screen.blit(self.player.head, self.player.rhead)
         screen.blit(self.player2.image, self.player2.rect)
         screen.blit(self.player2.head, self.player2.rhead)
-        self.hud.draw(screen)
+        time = "0:"+str(self.timeLeft()) if self.timeLeft() > 9 else "0:0"+str(self.timeLeft())
+        self.hud.draw(screen, time)
         pygame.display.flip()
 
     def putBomb(self, player):
@@ -316,9 +325,13 @@ def main():
         screen.blit(scoreBadge,(left,top))
         scoreFont=pygame.font.Font(None,52)
         scoreFont2=pygame.font.Font(None,22)
-        statusText=scoreFont.render('Player '+str(whoWin)+' wins',True,(0,0,0),(231,230,33))
+        if whoWin == -1:
+            statusText=scoreFont.render('Draw game',True,(0,0,0),(231,230,33))
+            screen.blit(statusText,(76,110))
+        else:
+            statusText=scoreFont.render('Player '+str(whoWin)+' wins',True,(0,0,0),(231,230,33))
+            screen.blit(statusText,(54,110))
         statusText2=scoreFont2.render('Press r to restart',True,(0,0,0),(231,230,33))
-        screen.blit(statusText,(54,110))
         screen.blit(statusText2,(104,150))
         pygame.display.flip()
         ## Wait for the player to restart
