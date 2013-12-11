@@ -318,7 +318,8 @@ class Game():
 def main():
     pygame.init()
     # creamos la ventana y le indicamos un titulo:
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    #screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    screen = pygame.display.set_mode((320, 240))
     pygame.display.set_caption("BomberPi")
  
     while True:
@@ -328,18 +329,17 @@ def main():
         #End of game
         scoreBadge=pygame.image.load("scoreframe.png")
         scoreBadge.convert_alpha()
-        left=18;top=60
-        screen.blit(scoreBadge,(left,top))
+        screen.blit(scoreBadge,(10,10))
         scoreFont=pygame.font.Font(None,52)
         scoreFont2=pygame.font.Font(None,22)
         if whoWin == -1:
-            statusText=scoreFont.render('Draw game',True,(0,0,0),(231,230,33))
-            screen.blit(statusText,(76,110))
+            statusText=scoreFont.render('Draw game',True,(255,255,255))
+            screen.blit(statusText,(66,90))
         else:
-            statusText=scoreFont.render('Player '+str(whoWin)+' wins',True,(0,0,0),(231,230,33))
-            screen.blit(statusText,(54,110))
-        statusText2=scoreFont2.render('Press r to restart',True,(0,0,0),(231,230,33))
-        screen.blit(statusText2,(104,150))
+            statusText=scoreFont.render('Player '+str(whoWin)+' wins',True,(255,255,255))
+            screen.blit(statusText,(44,90))
+        statusText2=scoreFont2.render('Press r to restart',True,(255,255,255))
+        screen.blit(statusText2,(104,130))
         pygame.display.flip()
         ## Wait for the player to restart
         restart = False
