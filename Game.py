@@ -5,7 +5,7 @@
 # Importacion de los módulos
 # ---------------------------
 
-SERIAL = False
+SERIAL = True
  
 import pygame
 from pygame.locals import *
@@ -278,13 +278,13 @@ class Game():
             self.transportPlayer(self.player2)
 
         if PlayController["PS2_ABAJO"] or PlayController["PS2_JLABAJO"]:
-            self.movePlayer(self.player2,0,4*self.player.speed)
+            self.movePlayer(self.player2,0,4*self.player2.speed)
         if PlayController["PS2_ARRIBA"] or PlayController["PS2_JLARRIBA"]:
-            self.movePlayer(self.player2,0,-4*self.player.speed)
+            self.movePlayer(self.player2,0,-4*self.player2.speed)
         if PlayController["PS2_DERECHA"] or PlayController["PS2_JLDERECHA"]:
-            self.movePlayer(self.player2,4*self.player.speed,0)
+            self.movePlayer(self.player2,4*self.player2.speed,0)
         if PlayController["PS2_IZQUIERDA"] or PlayController["PS2_JLIZQUIERDA"]:
-            self.movePlayer(self.player2,-4*self.player.speed,0)
+            self.movePlayer(self.player2,-4*self.player2.speed,0)
         if PlayController["PS2_EQUIS"]:
             self.putBomb(self.player2)
         if PlayController["PS2_CIRCULO"] and self.player2.transport:
