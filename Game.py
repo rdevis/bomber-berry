@@ -184,7 +184,7 @@ class Game():
         pygame.display.flip()
 
     def putBomb(self, player):
-        otherPlayer = self.players[self.player.number%2]
+        otherPlayer = self.players[player.number%2]
         if otherPlayer.x != player.x or otherPlayer.y != player.y:
             if not self.map[player.x][player.y] and not pygame.sprite.spritecollideany(player, self.bombs):
                 bomb = player.createBomb(FPS*BOMB_TIME)
