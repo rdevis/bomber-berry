@@ -5,7 +5,7 @@
 # Importacion de los módulos
 # ---------------------------
 
-SERIAL = True
+SERIAL = False
  
 import pygame
 from pygame.locals import *
@@ -21,7 +21,7 @@ SCREEN_WIDTH = 320
 SCREEN_HEIGHT = 240
 FPS = 30
 BOMB_TIME = 3
-TIME_LIMIT = 15
+TIME_LIMIT = 90
 
 UP = 0
 RIGHT = 1
@@ -62,6 +62,12 @@ class Game():
 
     def timeLeft(self):
         return TIME_LIMIT-self.tock/FPS
+
+    def timer(self):
+        minutes = self.timeLeft() / 60
+        seconds = self.timeLeft() - minutes*60
+        time = "0"+str(minutes)+":"+str(seconds) if seconds > 9 else "0"+str(minutes)+":0"+str(seconds)
+        return time
 
     def startGame(self, screen):
         clock = pygame.time.Clock()
@@ -174,16 +180,17 @@ class Game():
         screen.blit(self.player.head, self.player.rhead)
         screen.blit(self.player2.image, self.player2.rect)
         screen.blit(self.player2.head, self.player2.rhead)
-        time = "0:"+str(self.timeLeft()) if self.timeLeft() > 9 else "0:0"+str(self.timeLeft())
-        self.hud.draw(screen, time)
+        self.hud.draw(screen, self.timer())
         pygame.display.flip()
 
     def putBomb(self, player):
-        if not self.map[player.x][player.y] and not pygame.sprite.spritecollideany(player, self.bombs):
-            bomb = player.createBomb(FPS*BOMB_TIME)
-            if bomb:
-                self.bombs.add(bomb)
-                self.map[bomb.x][bomb.y] = bomb
+        otherPlayer = self.players[self.player.number%2]
+        if otherPlayer.x != player.x or otherPlayer.y != player.y:
+            if not self.map[player.x][player.y] and not pygame.sprite.spritecollideany(player, self.bombs):
+                bomb = player.createBomb(FPS*BOMB_TIME)
+                if bomb:
+                    self.bombs.add(bomb)
+                    self.map[bomb.x][bomb.y] = bomb
 
     def transportPlayer(self, player):
         while True:
