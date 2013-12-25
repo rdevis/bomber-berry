@@ -5,9 +5,9 @@
 # Importacion de los módulos
 # ---------------------------
 
-SERIAL = False
+SERIAL = True
  
-import pygame
+import pygame, datetime, Tweet
 from pygame.locals import *
 import Tile, Hud, os, sys, random, math, time
 if SERIAL:
@@ -77,9 +77,7 @@ class Game():
             self.checkEvents()
             self.drawGame(screen)
             self.tock += 1
-        if self.timeLeft() < 0:
-            return -1
-        return self.win
+        return self.win, self.timeLeft()
 
     def createMap(self):
         for x in range(0,19):
@@ -324,7 +322,13 @@ def main():
  
     while True:
         game = Game()
-        whoWin = game.startGame(screen)
+        whoWin, timeleft = game.startGame(screen)
+	date_end = datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S")
+	if not whoWin is None:
+		message = "Gano el jugador %s en la fecha %s a falta de %s segundos" % (whoWin, date_end, timeleft)
+	else:
+		message = "En la fecha %s hubo un empate de los dos jugadores" % (date_end)
+	Tweet.sendTweet(message)
 
         #End of game
         scoreBadge=pygame.image.load("scoreframe.png")
@@ -332,7 +336,7 @@ def main():
         screen.blit(scoreBadge,(10,10))
         scoreFont=pygame.font.Font(None,52)
         scoreFont2=pygame.font.Font(None,22)
-        if whoWin == -1:
+        if whoWin is None:
             statusText=scoreFont.render('Draw game',True,(255,255,255))
             screen.blit(statusText,(66,90))
         else:

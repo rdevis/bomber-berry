@@ -126,7 +126,8 @@ class Bomberman(Tile):
             return b
 
     def removeBomb(self, bomb):
-        self.bombs.remove(bomb)
+	if bomb in self.bombs:
+	        self.bombs.remove(bomb)
 
 
 class Bomb(Tile):

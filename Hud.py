@@ -51,5 +51,5 @@ class Hud(pygame.sprite.Sprite):
         screen.blit(self.image, (0,0))
         font=pygame.font.Font(None,28)
         time=font.render(time, 1,(255,255,255))
-        screen.blit(time, (140, 4))
+        screen.blit(time, (140, 2))
 
