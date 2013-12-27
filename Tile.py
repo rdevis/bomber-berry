@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
   
 
-import pygame, os, sys, random
+import pygame, os, sys, random, pyganim
 
 UP = 0
 RIGHT = 1
@@ -87,6 +87,24 @@ class Bomberman(Tile):
 
     def __init__(self, x, y, number):
         Tile.__init__(self, "body%d.png" % (number), True, x, y, True, True)
+        
+        self.front_standing = pygame.image.load("sprites/bomber%d/bomber_front.png" % (number))
+        self.back_standing = pygame.image.load("sprites/bomber%d/bomber_back.png" % (number))
+        self.left_standing = pygame.image.load("sprites/bomber%d/bomber_left.png" % (number))
+        self.right_standing = pygame.transform.flip(self.left_standing, True, False)
+        self.animTypes = 'back_walk front_walk left_walk'.split()
+        self.animObjs = {}
+        for animType in self.animTypes:
+            imagesAndDurations = [('sprites/bomber%d/bomber_%s.%s.png' % (number,animType, str(num).rjust(3, '0')), 0.1) for num in range(3)]
+            self.animObjs[animType] = pyganim.PygAnimation(imagesAndDurations)
+        self.animObjs['right_walk'] = self.animObjs['left_walk'].getCopy()
+        self.animObjs['right_walk'].flip(True, False)
+        self.animObjs['right_walk'].makeTransformsPermanent()
+        self.moveConductor = pyganim.PygConductor(self.animObjs)
+
+        self.moving = False
+        self.direction = DOWN
+
         self.number = number
         self.maxBombs = 1
         self.bombExpansion = 2
@@ -100,6 +118,29 @@ class Bomberman(Tile):
         self.head = load_image("head%d.png" % (number), "sprites/", alpha=True)
         self.rhead = self.head.get_rect()
         self.updateHead()
+
+    def draw(self, screen):
+        if self.moving:
+            self.moveConductor.play()
+            if self.direction == UP:
+                self.animObjs['back_walk'].blit(screen, (self.rect.x, self.rect.y-13))
+            elif self.direction == DOWN:
+                self.animObjs['front_walk'].blit(screen, (self.rect.x, self.rect.y-13))
+            elif self.direction == LEFT:
+                self.animObjs['left_walk'].blit(screen, (self.rect.x, self.rect.y-13))
+            elif self.direction == RIGHT:
+                self.animObjs['right_walk'].blit(screen, (self.rect.x, self.rect.y-13))
+        else:
+            self.moveConductor.stop()
+            if self.direction == UP:
+                screen.blit(self.back_standing, (self.rect.x, self.rect.y-13))
+            elif self.direction == DOWN:
+                screen.blit(self.front_standing, (self.rect.x, self.rect.y-13))
+            elif self.direction == LEFT:
+                screen.blit(self.left_standing, (self.rect.x, self.rect.y-13))
+            elif self.direction == RIGHT:
+                screen.blit(self.right_standing, (self.rect.x, self.rect.y-13))
+
 
     def updateHead(self):
         self.rhead.centerx = self.rect.centerx
@@ -126,8 +167,7 @@ class Bomberman(Tile):
             return b
 
     def removeBomb(self, bomb):
-	if bomb in self.bombs:
-	        self.bombs.remove(bomb)
+        self.bombs.remove(bomb)
 
 
 class Bomb(Tile):
@@ -136,6 +176,14 @@ class Bomb(Tile):
         self.timer = time
         self.owner = player
         self.expansion = expansion
+
+        self.bombAnim = pyganim.PygAnimation([('sprites/bomb.png', 0.2),
+                                         ('sprites/bomb1.png', 0.2),
+                                         ('sprites/bomb2.png', 0.2)])
+        self.bombAnim.play()
+
+    def draw(self, screen):
+        self.bombAnim.blit(screen, (self.rect.x, self.rect.y))
 
 class Fire(Tile):
     def __init__(self, x, y, time, expansion):

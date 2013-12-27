@@ -5,9 +5,9 @@
 # Importacion de los módulos
 # ---------------------------
 
-SERIAL = True
+SERIAL = False
  
-import pygame, datetime, Tweet
+import pygame, datetime, Tweet, threading
 from pygame.locals import *
 import Tile, Hud, os, sys, random, math, time
 if SERIAL:
@@ -62,12 +62,6 @@ class Game():
 
     def timeLeft(self):
         return TIME_LIMIT-self.tock/FPS
-
-    def timer(self):
-        minutes = self.timeLeft() / 60
-        seconds = self.timeLeft() - minutes*60
-        time = "0"+str(minutes)+":"+str(seconds) if seconds > 9 else "0"+str(minutes)+":0"+str(seconds)
-        return time
 
     def startGame(self, screen):
         clock = pygame.time.Clock()
@@ -171,14 +165,14 @@ class Game():
 
         screen.fill((16,120,48))
         self.tiles.draw(screen)
-        self.bombs.draw(screen)
+        #self.bombs.draw(screen)
+        for bomb in self.bombs:
+            bomb.draw(screen)
         self.fires.draw(screen)
         self.powerups.draw(screen)
-        screen.blit(self.player.image, self.player.rect)
-        screen.blit(self.player.head, self.player.rhead)
-        screen.blit(self.player2.image, self.player2.rect)
-        screen.blit(self.player2.head, self.player2.rhead)
-        self.hud.draw(screen, self.timer())
+        self.player.draw(screen)
+        self.player2.draw(screen)
+        self.hud.draw(screen, self.timeLeft())
         pygame.display.flip()
 
     def putBomb(self, player):
@@ -250,27 +244,43 @@ class Game():
             sys.exit(0)
 
         # Player 1 controls
+        if (keys[K_DOWN] or keys[K_UP] or keys[K_RIGHT] or keys[K_LEFT] or
+            PlayController["PS1_ABAJO"] or PlayController["PS1_JLABAJO"] or
+            PlayController["PS1_ARRIBA"] or PlayController["PS1_JLARRIBA"] or
+            PlayController["PS1_DERECHA"] or PlayController["PS1_JLDERECHA"] or
+            PlayController["PS1_IZQUIERDA"] or PlayController["PS1_JLIZQUIERDA"]):
+            self.player.moving=True
+        else:
+            self.player.moving=False
+
         if keys[K_DOWN]:
+            self.player.direction = DOWN
             self.movePlayer(self.player,0,4*self.player.speed)
         if keys[K_UP]:
+            self.player.direction = UP
             self.movePlayer(self.player,0,-4*self.player.speed)
         if keys[K_RIGHT]:
+            self.player.direction = RIGHT
             self.movePlayer(self.player,4*self.player.speed,0)
         if keys[K_LEFT]:
+            self.player.direction = LEFT
             self.movePlayer(self.player,-4*self.player.speed,0)
         if keys[K_RCTRL]:
             self.putBomb(self.player)
         if keys[K_RSHIFT] and self.player.transport:
             self.transportPlayer(self.player)
 
-
         if PlayController["PS1_ABAJO"] or PlayController["PS1_JLABAJO"]:
+            self.player.direction = DOWN
             self.movePlayer(self.player,0,4*self.player.speed)
         if PlayController["PS1_ARRIBA"] or PlayController["PS1_JLARRIBA"]:
+            self.player.direction = UP
             self.movePlayer(self.player,0,-4*self.player.speed)
         if PlayController["PS1_DERECHA"] or PlayController["PS1_JLDERECHA"]:
+            self.player.direction = RIGHT
             self.movePlayer(self.player,4*self.player.speed,0)
         if PlayController["PS1_IZQUIERDA"] or PlayController["PS1_JLIZQUIERDA"]:
+            self.player.direction = LEFT
             self.movePlayer(self.player,-4*self.player.speed,0)
         if PlayController["PS1_EQUIS"]:
             self.putBomb(self.player)
@@ -278,13 +288,26 @@ class Game():
             self.transportPlayer(self.player)
 
         # Player 2 controls
+        if (keys[K_w] or keys[K_s] or keys[K_a] or keys[K_d] or
+            PlayController["PS2_ABAJO"] or PlayController["PS2_JLABAJO"] or
+            PlayController["PS2_ARRIBA"] or PlayController["PS2_JLARRIBA"] or
+            PlayController["PS2_DERECHA"] or PlayController["PS2_JLDERECHA"] or
+            PlayController["PS2_IZQUIERDA"] or PlayController["PS2_JLIZQUIERDA"]):
+            self.player2.moving=True
+        else:
+            self.player2.moving=False
+
         if keys[K_s]:
+            self.player2.direction = DOWN
             self.movePlayer(self.player2,0,4*self.player2.speed)
         if keys[K_w]:
+            self.player2.direction = UP
             self.movePlayer(self.player2,0,-4*self.player2.speed)
         if keys[K_d]:
+            self.player2.direction = RIGHT
             self.movePlayer(self.player2,4*self.player2.speed,0)
         if keys[K_a]:
+            self.player2.direction = LEFT
             self.movePlayer(self.player2,-4*self.player2.speed,0)
         if keys[K_LCTRL]:
             self.putBomb(self.player2)
@@ -292,12 +315,16 @@ class Game():
             self.transportPlayer(self.player2)
 
         if PlayController["PS2_ABAJO"] or PlayController["PS2_JLABAJO"]:
+            self.player2.direction = DOWN
             self.movePlayer(self.player2,0,4*self.player2.speed)
         if PlayController["PS2_ARRIBA"] or PlayController["PS2_JLARRIBA"]:
+            self.player2.direction = UP
             self.movePlayer(self.player2,0,-4*self.player2.speed)
         if PlayController["PS2_DERECHA"] or PlayController["PS2_JLDERECHA"]:
+            self.player2.direction = RIGHT
             self.movePlayer(self.player2,4*self.player2.speed,0)
         if PlayController["PS2_IZQUIERDA"] or PlayController["PS2_JLIZQUIERDA"]:
+            self.player2.direction = LEFT
             self.movePlayer(self.player2,-4*self.player2.speed,0)
         if PlayController["PS2_EQUIS"]:
             self.putBomb(self.player2)
@@ -316,19 +343,19 @@ class Game():
 def main():
     pygame.init()
     # creamos la ventana y le indicamos un titulo:
-    #screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     screen = pygame.display.set_mode((320, 240))
     pygame.display.set_caption("BomberPi")
  
     while True:
         game = Game()
         whoWin, timeleft = game.startGame(screen)
-	date_end = datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S")
-	if not whoWin is None:
-		message = "Gano el jugador %s en la fecha %s a falta de %s segundos" % (whoWin, date_end, timeleft)
-	else:
-		message = "En la fecha %s hubo un empate de los dos jugadores" % (date_end)
-	Tweet.sendTweet(message)
+        date_end = datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S")
+        if not whoWin is None:
+            message = "Gano el jugador %s en la fecha %s a falta de %s segundos" % (whoWin, date_end, timeleft)
+        else:
+            message = "En la fecha %s hubo un empate de los dos jugadores" % (date_end)
+        t = threading.Thread(target=Tweet.sendTweet, args=(message, ))
+        t.start(); t.join
 
         #End of game
         scoreBadge=pygame.image.load("scoreframe.png")

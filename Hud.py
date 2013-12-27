@@ -47,9 +47,15 @@ class Hud(pygame.sprite.Sprite):
         elif player == 2:
             self.image.blit(self.empty, TELE2)
 
-    def draw(self, screen, time):
+    def getTime(self, totalSeconds):
+        minutes = totalSeconds / 60
+        seconds = totalSeconds - minutes*60
+        time = "0"+str(minutes)+":"+str(seconds) if seconds > 9 else "0"+str(minutes)+":0"+str(seconds)
+        return time
+
+    def draw(self, screen, seconds):
         screen.blit(self.image, (0,0))
         font=pygame.font.Font(None,28)
-        time=font.render(time, 1,(255,255,255))
-        screen.blit(time, (140, 2))
+        time=font.render(self.getTime(seconds), 1,(255,255,255))
+        screen.blit(time, (140, 4))
 
